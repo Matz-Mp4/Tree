@@ -1,0 +1,1 @@
+/home/matz/Desktop/Code/Rust/tree/target/debug/tree: /home/matz/Desktop/Code/Rust/tree/src/bst/binary_search_tree.rs /home/matz/Desktop/Code/Rust/tree/src/bst.rs /home/matz/Desktop/Code/Rust/tree/src/lib.rs /home/matz/Desktop/Code/Rust/tree/src/main.rs
