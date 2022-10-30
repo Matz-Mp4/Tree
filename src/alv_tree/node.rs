@@ -1,8 +1,6 @@
 pub mod avl_node {
     /* use std::cmp::Ordering; */
 
-    
-
     type Tree<T> = Option<Box<Node<T>>>;
 
     pub struct Node<T: Ord> {
