@@ -2,6 +2,7 @@
 pub mod bst {
     use std::collections::VecDeque;
     use std::mem::replace;
+
     use std::{cmp::Ordering, fmt::Display};
 
     type Tree<T> = Option<Box<Node<T>>>;
@@ -128,8 +129,7 @@ pub mod bst {
 
         pub fn clear(&mut self) {
             let mut queue: VecDeque<Tree<T>> = VecDeque::new();
-
-            queue.push_front(self.root.take());
+queue.push_front(self.root.take());
             while let Some(mut current_tree) = queue.pop_front() {
                 if let Some(mut current_node) = current_tree.take() {
                     if current_node.left.is_some() {
