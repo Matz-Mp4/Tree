@@ -1,6 +1,6 @@
 pub mod avl_set {
     use crate::alv_tree::node::avl_node::Node;
-    use std::{cmp::Ordering, collections::VecDeque};
+    use std::{cmp::Ordering, collections::VecDeque, fmt::Display};
 
     type Tree<T> = Option<Box<Node<T>>>;
 
@@ -9,7 +9,7 @@ pub mod avl_set {
         pub root: Tree<T>,
     }
 
-    impl<T: Ord> AvlTree<T> {
+    impl<T: Ord + Display> AvlTree<T> {
         ///Create an empty tree
         pub fn new() -> Self {
             Self { root: None }
@@ -22,6 +22,57 @@ pub mod avl_set {
                 _ => false,
             }
         }
+
+        /// Show all elemets in the tree in ascending order
+        ///
+        /// # Examples
+        ///   let mut tree = BinaryTree::new();
+        ///   tree.add(2);
+        ///   tree.add(1);
+        ///   tree.add(3);
+        ///   tree.add(-3);
+        ///
+        ///   tree.show_in_order()
+        ///
+        ///   Output: (-3)(1)(2)(3)
+        ///
+
+        pub fn show_in_order(&self, tree: &Tree<T>) {
+            if let Some(node) = tree {
+                self.show_in_order(&node.left);
+                print!("({})", node.data);
+                self.show_in_order(&node.right);
+            }
+        }
+
+
+        pub fn show_in_level(&self) {
+            let mut queue: VecDeque<&Tree<T>> = VecDeque::new();
+            let mut current_tree;
+            let mut string = String::new();
+
+            if !self.is_empty() {
+                queue.push_front(&self.root);
+                while !queue.is_empty() {
+                    current_tree = queue.pop_front().unwrap();
+
+                    if let Some(current_node) = current_tree {
+
+                        print!(" ({}) ", current_node.data);
+                        string.push_str(current_node.data.to_string().as_str());
+                        if current_node.left.is_some() {
+                            queue.push_back(&current_node.left);
+                        }
+
+                        if current_node.right.is_some() {
+                            queue.push_back(&current_node.right);
+                        }
+                    }
+                }
+
+            }
+        }
+
 
         /// return some with the maximum value in tree or None wether tree is empty
         ///
@@ -149,6 +200,19 @@ pub mod avl_set {
             }
             amount
         }
+
+        /// remove all the elements deallocating from memory
+        ///
+        ///  # Examples
+        ///  tree.add(2);
+        ///  tree.add(3);
+        ///  tree.add(1);
+        ///
+        ///  tree.clear();
+        ///
+        /// assert_eq!(None, tree.get(&3));
+        /// assert_eq!(None, tree.get(&2));
+        /// assert_eq!(None, tree.get(&1));
 
         pub fn clear(&mut self) {
             let mut queue: VecDeque<Tree<T>> = VecDeque::new();

@@ -1,6 +1,8 @@
 pub mod avl_iterator {
-    use crate::alv_tree::{node::avl_node::{Node, Tree}, avl::avl_set::AvlTree};
-
+    use crate::alv_tree::{
+        avl::avl_set::AvlTree,
+        node::avl_node::{Node, Tree},
+    };
 
     pub struct AvlIterator<'a, T: Ord> {
         prev_nodes: Vec<&'a Node<T>>,
@@ -54,7 +56,7 @@ pub mod avl_iterator {
         }
     }
 
-    impl<'a, T: Ord > AvlTree<T> {
+    impl<'a, T: Ord> AvlTree<T> {
         pub fn iter(&'a self) -> AvlIterator<'a, T> {
             AvlIterator {
                 prev_nodes: Vec::new(),
