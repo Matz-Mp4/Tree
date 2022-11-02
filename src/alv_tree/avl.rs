@@ -4,21 +4,33 @@ pub mod avl_set {
 
     type Tree<T> = Option<Box<Node<T>>>;
 
+    ///An ordered AvlTree
     pub struct AvlTree<T: Ord> {
         root: Tree<T>,
     }
 
     impl<T: Ord> AvlTree<T> {
+        ///Create an empty tree
         pub fn new() -> Self {
             Self { root: None }
         }
 
+        ///return true if there are no elements
         pub fn is_empty(&self) -> bool {
             match self.root {
                 None => true,
                 _ => false,
             }
         }
+
+        /// return some with the maximum value in tree or None wether tree is empty
+        ///
+        /// # Examples
+        ///   let mut tree = BinaryTree::new();
+        ///   tree.add(2);
+        ///   tree.add(1);
+        ///   tree.add(3);
+        ///   assert!(Some(&3), tree.get_maximum());
 
         pub fn get_maximum(&self) -> Option<&T> {
             let mut current_tree = &self.root;
@@ -44,6 +56,15 @@ pub mod avl_set {
 
             None
         }
+
+        /// return some with the minimum value in tree or None wether tree is empty
+        ///
+        /// # Examples
+        ///   let mut tree = BinaryTree::new();
+        ///   tree.add(2);
+        ///   tree.add(1);
+        ///   tree.add(3);
+        ///   assert!(Some(&1), tree.get_minimum());
 
         pub fn get_minimum(&self) -> Option<&T> {
             let mut current_tree = &self.root;
@@ -90,6 +111,8 @@ pub mod avl_set {
             }
             None
         }
+
+        /// return some with the  value  or None wether tree is empty
         pub fn get(&mut self, value: &T) -> Option<&T> {
             let node = Self::search(self, &value);
 
@@ -99,6 +122,7 @@ pub mod avl_set {
             }
         }
 
+        /// return the amount of elemets  
         pub fn len(&self) -> i32 {
             let mut amount = 0;
             let mut queue: VecDeque<&Tree<T>> = VecDeque::new();
@@ -124,6 +148,22 @@ pub mod avl_set {
                 }
             }
             amount
+        }
+
+        pub fn clear(&mut self) {
+            let mut queue: VecDeque<Tree<T>> = VecDeque::new();
+            queue.push_front(self.root.take());
+            while let Some(mut current_tree) = queue.pop_front() {
+                if let Some(mut current_node) = current_tree.take() {
+                    if current_node.left.is_some() {
+                        queue.push_front(current_node.left.take());
+                    }
+
+                    if current_node.right.is_some() {
+                        queue.push_front(current_node.right.take());
+                    }
+                }
+            }
         }
     }
 }
