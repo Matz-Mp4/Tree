@@ -3,7 +3,7 @@ pub mod avl_node {
 
     use std::mem::{replace, swap};
 
-    type Tree<T> = Option<Box<Node<T>>>;
+    pub type Tree<T> = Option<Box<Node<T>>>;
 
     pub struct Node<T: Ord> {
         pub left: Tree<T>,
@@ -114,6 +114,83 @@ pub mod avl_node {
             left_node.update_balance_fac();
 
             true
+        }
+
+        /// return true wether tree need to rebalance or false whether it does not need
+        ///
+        /// Case I
+        ///
+        ///                (X) balance_fac = -1
+        ///               /                        (rotation to right)        (Y)  balance_fac = 0
+        ///             (Y) balance_fac = -1              =>                  / \                
+        ///             /                                                   (Y) (Z) balance_fac = 0
+        ///           (Z)  balance_fac = 0
+        ///
+        /// Case II
+        ///
+        ///           (X) balance_fac =  1
+        ///             \                          (rotation to right)        (Y)  balance_fac = 0
+        ///             (Y) balance_fac =  1              =>                  / \                
+        ///              \                                                   (X) (Z) balance_fac = 0
+        ///              (Z)  balance_fac = 0
+        ///      
+        /// Case III
+        ///
+        ///            (ii) (X) balance_fac =  1     (rotation to right) (i)
+        ///                  \                       (rotation to left) (ii)        (Z)  balance_fac = 0
+        ///             (i) (Y) balance_fac = -1               =>                  / \                
+        ///                 /                                                   (X) (Y) balance_fac = 0
+        ///               (Z)  balance_fac = 0
+        ///
+        /// Case IV
+        ///
+        ///            (ii) (X) balance_fac =  -1    (rotation to left) (i)
+        ///                 /                       (rotation to right) (ii)      (Z)  balance_fac = 0
+        ///           (i) (Y) balance_fac = 1               =>                    / \                
+        ///                \                                                   (Y) (Z) balance_fac = 0
+        ///               (Z)  balance_fac = 0
+        ///
+        pub fn rebalance(&mut self) -> bool {
+            match self.balance_fac {
+                -1 => {
+                    if let Some(ref mut left_node) = self.left {
+                        //Root is heavy on left side
+                        if left_node.balance_fac == -1 {
+                            //Case I
+                            self.rotation_right();
+                            return true;
+
+                        //Root is also heavy on left side and need double rotation
+                        } else if left_node.balance_fac == 1 {
+                            //Case IV
+                            left_node.rotation_left();
+                            self.rotation_right();
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                1 => {
+                    if let Some(ref mut right_node) = self.right {
+                        //Root is heavy on right side
+                        if right_node.balance_fac == 1 {
+                            //Case II
+                            self.rotation_left();
+                            return true;
+
+                        //Root is also heavy on right side and need double rotation
+                        } else if right_node.balance_fac == -1 {
+                            //Case III
+                            right_node.rotation_right();
+                            self.rotation_left();
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                _ => false,
+            }
         }
 
         /// return some with the next value in ascendent order or None wether tree is empty

@@ -6,7 +6,7 @@ pub mod avl_set {
 
     ///An ordered AvlTree
     pub struct AvlTree<T: Ord> {
-        root: Tree<T>,
+        pub root: Tree<T>,
     }
 
     impl<T: Ord> AvlTree<T> {
