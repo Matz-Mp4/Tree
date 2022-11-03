@@ -45,7 +45,6 @@ pub mod avl_set {
             }
         }
 
-
         pub fn show_in_level(&self) {
             let mut queue: VecDeque<&Tree<T>> = VecDeque::new();
             let mut current_tree;
@@ -57,7 +56,6 @@ pub mod avl_set {
                     current_tree = queue.pop_front().unwrap();
 
                     if let Some(current_node) = current_tree {
-
                         print!(" ({}) ", current_node.data);
                         string.push_str(current_node.data.to_string().as_str());
                         if current_node.left.is_some() {
@@ -69,10 +67,8 @@ pub mod avl_set {
                         }
                     }
                 }
-
             }
         }
-
 
         /// return some with the maximum value in tree or None wether tree is empty
         ///

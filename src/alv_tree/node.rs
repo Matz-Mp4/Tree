@@ -22,16 +22,16 @@ pub mod avl_node {
             }
         }
 
-        fn update_balance_fac(&mut self) {
+        pub fn update_balance_fac(&mut self) {
             if self.left.is_some() && self.right.is_none() {
                 self.balance_fac = -1;
             } else if self.left.is_none() && self.right.is_some() {
                 self.balance_fac = 1;
-            } else {
+            } else if self.left.is_some() && self.right.is_some(){
                 let right_node = self.left.as_ref().unwrap();
                 let left_node = self.left.as_ref().unwrap();
 
-                self.balance_fac = right_node.balance_fac - left_node.balance_fac;
+                self.balance_fac = right_node.balance_fac.abs() - left_node.balance_fac.abs();
             }
         }
 
