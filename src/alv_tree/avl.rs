@@ -225,5 +225,43 @@ pub mod avl_set {
                 }
             }
         }
+
+        pub fn add(&mut self, value: T) -> bool {
+            let mut current_tree = &mut self.root;
+            let mut parents_nodes = Vec::<*mut Node<T>>::new();
+
+            while let Some(current_node) = current_tree {
+                // Converting a mutable reference to a pointer
+                //allow one secondary mutable reference after insertion
+                //if we use let mut parents_nodes = Vec::<&mut Node<T>>::new();
+                //we could not to push because of Borrow checker (borrow twice a mutable variable)
+                parents_nodes.push(&mut **current_node);
+                match current_node.data.cmp(&value) {
+                    Ordering::Less => {
+                        current_tree = &mut current_node.right;
+                    }
+                    Ordering::Equal => {
+                        return false;
+                    }
+                    Ordering::Greater => current_tree = &mut current_node.left,
+                }
+            }
+            *current_tree = Some(Box::new(Node::new(value)));
+
+            //We could change the type of Tree to Option<rc<RefCell<T>>>
+            //to allow multiples mutable pointers but the complexity to manage would
+            //increase and instead, I rather use unsafe to simplify
+            //
+            //We only can derefence a raw pointer in unsafe rust
+            for current_node in parents_nodes.into_iter().rev() {
+                let node = unsafe {
+                    &mut *current_node // Converting a mutable pointer back to a reference
+                };
+                node.update_balance_fac();
+                node.rebalance();
+            }
+
+            true
+        }
     }
 }
