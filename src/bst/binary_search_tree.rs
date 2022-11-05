@@ -195,10 +195,12 @@ pub mod bst {
                         //Getting the most lef-right node
                         let mut most_left_right = &mut target_node.left;
                         let mut ver = false;
+                        let mut has_left_child = false;
 
                         while ver == false {
                             if let Some(node_left_right) = most_left_right {
                                 if node_left_right.right.is_none() {
+                                    has_left_child = node_left_right.left.is_some();
                                     ver = true;
                                 }
                             }
@@ -209,9 +211,18 @@ pub mod bst {
                                 }
                             }
                         }
-                        let temp_node = most_left_right.take().unwrap();
 
-                        let _x = replace::<T>(&mut target_node.data, temp_node.data);
+                        let data = {
+                            if has_left_child == true {
+                                let left_tree = most_left_right.as_mut().unwrap().left.take();
+                                let _temp = replace(most_left_right, left_tree);
+                                _temp.unwrap().data
+                            } else {
+                                most_left_right.take().unwrap().data
+                            }
+                        };
+
+                        let _x = replace(&mut target_node.data, data);
                     }
                     veri = true;
                 }

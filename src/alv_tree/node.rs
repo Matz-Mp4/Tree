@@ -22,6 +22,7 @@ pub mod avl_node {
             }
         }
 
+
         pub fn update_balance_fac(&mut self) {
             if self.left.is_some() && self.right.is_none() {
                 self.balance_fac = -1;
