@@ -25,6 +25,7 @@ pub mod avl_set {
 
         /// Show all elemets in the tree in ascending order
         ///
+        /// ```compile_fail
         /// # Examples
         ///   let mut tree = BinaryTree::new();
         ///   tree.add(2);
@@ -36,7 +37,8 @@ pub mod avl_set {
         ///
         ///   Output: (-3)(1)(2)(3)
         ///
-
+        /// ```
+        ///
         pub fn show_in_order(&self, tree: &Tree<T>) {
             if let Some(node) = tree {
                 self.show_in_order(&node.left);
@@ -44,6 +46,28 @@ pub mod avl_set {
                 self.show_in_order(&node.right);
             }
         }
+
+        /// Show all elemets in the tree in height level
+        ///
+        /// ```compile_fail
+        /// # Examples
+        ///   let mut tree = BinaryTree::new();
+        ///   tree.add(2);
+        ///   tree.add(1);
+        ///   tree.add(3);
+        ///   tree.add(4);
+        ///
+        ///           (2)
+        ///           / \
+        ///         (1) (3)
+        ///              \
+        ///              (4)
+        ///   tree.show_in_order()
+        ///
+        ///   Output: (2)(1)(3)(4)
+        ///
+        /// ```
+        ///
 
         pub fn show_in_level(&self) {
             let mut queue: VecDeque<&Tree<T>> = VecDeque::new();
@@ -72,12 +96,14 @@ pub mod avl_set {
 
         /// return some with the maximum value in tree or None wether tree is empty
         ///
+        /// ```compile_fail
         /// # Examples
         ///   let mut tree = BinaryTree::new();
         ///   tree.add(2);
         ///   tree.add(1);
         ///   tree.add(3);
         ///   assert!(Some(&3), tree.get_maximum());
+        /// ```
 
         pub fn get_maximum(&self) -> Option<&T> {
             let mut current_tree = &self.root;
@@ -106,12 +132,14 @@ pub mod avl_set {
 
         /// return some with the minimum value in tree or None wether tree is empty
         ///
+        /// ```compile_fail
         /// # Examples
         ///   let mut tree = BinaryTree::new();
         ///   tree.add(2);
         ///   tree.add(1);
         ///   tree.add(3);
         ///   assert!(Some(&1), tree.get_minimum());
+        /// ```
 
         pub fn get_minimum(&self) -> Option<&T> {
             let mut current_tree = &self.root;
@@ -199,6 +227,7 @@ pub mod avl_set {
 
         /// remove all the elements deallocating from memory
         ///
+        /// ```compile_fail
         ///  # Examples
         ///  tree.add(2);
         ///  tree.add(3);
@@ -209,6 +238,7 @@ pub mod avl_set {
         /// assert_eq!(None, tree.get(&3));
         /// assert_eq!(None, tree.get(&2));
         /// assert_eq!(None, tree.get(&1));
+        /// ```
 
         pub fn clear(&mut self) {
             let mut queue: VecDeque<Tree<T>> = VecDeque::new();
@@ -260,9 +290,9 @@ pub mod avl_set {
             //to allow multiples mutable pointers but the complexity to manage would
             //increase and instead, I rather use unsafe to simplify
 
-            //When a rotation occurs we don't need to check the remian nodes 
+            //When a rotation occurs we don't need to check the remian nodes
             //It's similar to this f(f⁻¹(x)) = x => we change the balance_fac
-            //and the rotation makes inverse process. So all the nodes remain will have 
+            //and the rotation makes inverse process. So all the nodes remain will have
             //the same balance_fac after the insertion => !check_parent
             while !check_parent && !parents_nodes.is_empty() {
                 //We only can derefence a raw pointer in unsafe rust

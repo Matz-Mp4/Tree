@@ -26,7 +26,7 @@ pub mod avl_node {
             }
         }
 
-        pub fn update_balance_fac(&mut self, value_insert: &T) -> i8{
+        pub fn update_balance_fac(&mut self, value_insert: &T) -> i8 {
             let old_balance_fac = self.balance_fac.clone();
             if self.data.cmp(value_insert) == Ordering::Greater {
                 self.balance_fac += -1;
@@ -38,11 +38,26 @@ pub mod avl_node {
 
         /// return true wether tree has a left child or false whether it does not have  
         ///
-        ///               (D)             (B)    
+        /// ```compile_fail
+        /// # Examples
+        ///   let mut tree = AvlTree::new();
+        ///   tree.add(4);
+        ///   tree.add(2);
+        ///   tree.add(5);
+        ///   tree.add(1);
+        ///   tree.add(3);
+        ///
+        ///   let mut node_root = &mut tree.root.unwrap();
+        ///
+        ///   node_root.rotation_right();
+        ///   assert_eq!(2, node_root.data);
+        ///
+        ///               (4)             (2)    
         ///              /  \    =>      /  \        
-        ///            (B)  (E)        (A)  (D)
+        ///            (2)  (5)        (1)  (4)
         ///            / \                  / \       
-        ///          (A) (C)              (C) (E)                   
+        ///          (1) (3)              (3) (5)                   
+        /// ```
 
         pub fn rotation_right(&mut self) -> bool {
             if self.left.is_none() {
@@ -79,36 +94,48 @@ pub mod avl_node {
         }
 
         /// return true wether tree has a right child or false whether it does not have  
+        /// ```compile_fail
+        ///   let mut tree = AvlTree::new();
+        ///   tree.add(2);
+        ///   tree.add(4);
+        ///   tree.add(1);
+        ///   tree.add(3);
+        ///   tree.add(5);
         ///
-        ///               (D)             (B)    
-        ///              /  \    =>      /  \        
-        ///           (E)  (B)         (D)  (A)
-        ///                / \         / \       
-        ///              (C) (A)     (E) (C)                   
+        ///   let mut node_root = &mut tree.root.unwrap();
+        ///
+        ///   assert_eq!(4, node_root.data);
+        ///
+        ///               (2)             (4)
+        ///              /  \    =>      /  \
+        ///           (1)  (4)         (2)  (5)
+        ///                / \         / \
+        ///              (3) (5)     (1) (3)
+        /// ```
 
         pub fn rotation_left(&mut self) -> bool {
             if self.right.is_none() {
                 return false;
             }
 
-            //Take nodes A and C
+            //Take nodes 3 and 5
             let right_node = self.right.as_mut().unwrap();
             let right_right_tree = right_node.right.take();
             let right_left_tree = right_node.left.take();
 
             //We can use unwrap here because we are assuming they exist
-            //Link A node to left node (B)
+            //Link 5 node to left node (4)
             let mut new_left_tree = replace(&mut self.right, right_right_tree);
             // Swap B and D node value to avoid moving the root
             swap(&mut self.data, &mut new_left_tree.as_mut().unwrap().data);
-            //Take node E
+            //Take node 1
             let left_tree = self.left.take();
 
-            // Link C and E nodes to swapped D node
+            // Link 1 and 1 nodes to swapped 2 node
             let new_left_node = new_left_tree.as_mut().unwrap();
             new_left_node.right = right_left_tree;
             new_left_node.left = left_tree;
-            // 6. Link swapped D node to root left node
+            // 6. Link swapped 2 node to root left node
             self.left = new_left_tree;
 
             //update_balance_fac only for B(Root) and D(Right_Node)
@@ -122,39 +149,38 @@ pub mod avl_node {
         }
 
         /// return true wether tree need to rebalance or false whether it does not need
-        ///
-        /// Case I
-        ///
-        ///         (X) balance_fac = -2
-        ///         /                        (rotation to right)        (Y)  balance_fac = 0
-        ///       (Y) balance_fac = -1              =>                  / \                
-        ///       /                                                   (Y) (Z) balance_fac = 0
-        ///     (Z)  balance_fac = 0
-        ///
-        /// Case II
-        ///
-        ///     (X) balance_fac =  2
-        ///      \                          (rotation to right)        (Y)  balance_fac = 0
-        ///      (Y) balance_fac =  1              =>                  / \                
-        ///       \                                                  (X) (Z) balance_fac = 0
-        ///       (Z)  balance_fac = 0
-        ///      
-        /// Case III
-        ///
-        ///  (ii) (X) balance_fac =  2     (rotation to right) (i)
-        ///         \                       (rotation to left) (ii)        (Z)  balance_fac = 0
-        ///    (i) (Y) balance_fac = -1               =>                  / \                
-        ///         /                                                   (X) (Y) balance_fac = 0
-        ///       (Z)  balance_fac = 0
-        ///
-        /// Case IV
-        ///
-        ///     (ii) (X) balance_fac =  -2    (rotation to left) (i)
-        ///          /                       (rotation to right) (ii)      (Z)  balance_fac = 0
-        ///    (i) (Y) balance_fac = 1               =>                    / \                
-        ///          \                                                   (Y) (Z) balance_fac = 0
-        ///         (Z)  balance_fac = 0
-        ///
+        // ```
+        // Case I
+        //
+        //         (X) balance_fac = -2
+        //         /                        (rotation to right)        (Y)  balance_fac = 0
+        //       (Y) balance_fac = -1              =>                  / \
+        //       /                                                   (Y) (Z) balance_fac = 0
+        //     (Z)  balance_fac = 0
+        //
+        //     (X) balance_fac =  2
+        //      \                          (rotation to right)        (Y)  balance_fac = 0
+        //      (Y) balance_fac =  1              =>                  / \
+        //       \                                                  (X) (Z) balance_fac = 0
+        //       (Z)  balance_fac = 0
+        //
+        // Case III
+        //
+        //  (ii) (X) balance_fac =  2     (rotation to right) (i)
+        //         \                       (rotation to left) (ii)        (Z)  balance_fac = 0
+        //    (i) (Y) balance_fac = -1               =>                  / \
+        //         /                                                   (X) (Y) balance_fac = 0
+        //       (Z)  balance_fac = 0
+        //
+        // Case IV
+        //
+        //     (ii) (X) balance_fac =  -2    (rotation to left) (i)
+        //          /                       (rotation to right) (ii)      (Z)  balance_fac = 0
+        //    (i) (Y) balance_fac = 1               =>                    / \
+        //          \                                                   (Y) (Z) balance_fac = 0
+        //         (Z)  balance_fac = 0
+        // ```
+        //
         pub fn rebalance(&mut self, old_balance_fac: i8) -> bool {
             match self.balance_fac {
                 -2 => {
@@ -207,13 +233,15 @@ pub mod avl_node {
         /// return some with the next value in ascendent order or None wether tree is empty
         ///
         /// # Examples
-        ///   let mut tree = BinaryTree::new();
-        ///   tree.add(2);
+        /// ```compile_fail
+        ///   let mut tree = AvlTree::new();  
+        ///   tree.add(2);  
         ///   tree.add(1);
         ///   tree.add(3);
         ///   tree.add(4);
-        ///   assert!(Some(&3), tree.get_next(&2));
-
+        ///
+        ///   assert_eq!(Some(&3), tree.get_next(&2));
+        /// ```
         pub fn get_next(&self) -> &Tree<T> {
             let mut next = &self.left;
             let mut ver = false;
