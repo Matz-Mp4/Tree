@@ -9,7 +9,7 @@ pub mod avl_set {
         pub root: Tree<T>,
     }
 
-    impl<T: Ord + Display> AvlTree<T> {
+    impl<T: Ord + Display + Copy> AvlTree<T> {
         ///Create an empty tree
         pub fn new() -> Self {
             Self { root: None }
@@ -238,29 +238,41 @@ pub mod avl_set {
                 parents_nodes.push(&mut **current_node);
                 match current_node.data.cmp(&value) {
                     Ordering::Less => {
+                        /* current_node.balance_fac += 1; */
                         current_tree = &mut current_node.right;
                     }
                     Ordering::Equal => {
                         return false;
                     }
-                    Ordering::Greater => current_tree = &mut current_node.left,
+
+                    Ordering::Greater => {
+                        /* current_node.balance_fac += -1; */
+                        current_tree = &mut current_node.left;
+                    }
                 }
             }
             *current_tree = Some(Box::new(Node::new(value)));
 
+            let mut check_parent = false;
+            let mut old_balance_fac;
+
             //We could change the type of Tree to Option<rc<RefCell<T>>>
             //to allow multiples mutable pointers but the complexity to manage would
             //increase and instead, I rather use unsafe to simplify
-            //
-            //We only can derefence a raw pointer in unsafe rust
-            for current_node in parents_nodes.into_iter().rev() {
-                let node = unsafe {
-                    &mut *current_node // Converting a mutable pointer back to a reference
-                };
-                node.update_balance_fac();
-                node.rebalance();
-            }
 
+            //When a rotation occurs we don't need to check the remian nodes 
+            //It's similar to this f(f⁻¹(x)) = x => we change the balance_fac
+            //and the rotation makes inverse process. So all the nodes remain will have 
+            //the same balance_fac after the insertion => !check_parent
+            while !check_parent && !parents_nodes.is_empty() {
+                //We only can derefence a raw pointer in unsafe rust
+                let node = unsafe {
+                    // Converting a mutable pointer back to a reference
+                    &mut *(parents_nodes.pop().unwrap())
+                };
+                old_balance_fac = node.update_balance_fac(&value);
+                check_parent = node.rebalance(old_balance_fac);
+            }
             true
         }
     }

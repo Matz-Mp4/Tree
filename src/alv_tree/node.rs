@@ -1,7 +1,11 @@
 pub mod avl_node {
     /* use std::cmp::Ordering; */
 
-    use std::mem::{replace, swap};
+    use std::{
+        cmp::Ordering,
+        fmt::Display,
+        mem::{replace, swap},
+    };
 
     pub type Tree<T> = Option<Box<Node<T>>>;
 
@@ -12,7 +16,7 @@ pub mod avl_node {
         pub balance_fac: i8,
     }
 
-    impl<T: Ord> Node<T> {
+    impl<T: Ord + Display> Node<T> {
         pub fn new(data: T) -> Self {
             Self {
                 left: None,
@@ -22,18 +26,14 @@ pub mod avl_node {
             }
         }
 
-
-        pub fn update_balance_fac(&mut self) {
-            if self.left.is_some() && self.right.is_none() {
-                self.balance_fac = -1;
-            } else if self.left.is_none() && self.right.is_some() {
-                self.balance_fac = 1;
-            } else if self.left.is_some() && self.right.is_some(){
-                let right_node = self.left.as_ref().unwrap();
-                let left_node = self.left.as_ref().unwrap();
-
-                self.balance_fac = right_node.balance_fac.abs() - left_node.balance_fac.abs();
+        pub fn update_balance_fac(&mut self, value_insert: &T) -> i8{
+            let old_balance_fac = self.balance_fac.clone();
+            if self.data.cmp(value_insert) == Ordering::Greater {
+                self.balance_fac += -1;
+            } else if self.data.cmp(value_insert) == Ordering::Less {
+                self.balance_fac += 1;
             }
+            old_balance_fac
         }
 
         /// return true wether tree has a left child or false whether it does not have  
@@ -69,9 +69,11 @@ pub mod avl_node {
             self.right = new_right_tree;
 
             //update_balance_fac only for B(Root) and D(Right_Node)
-            self.update_balance_fac();
             let right_node = self.right.as_mut().unwrap();
-            right_node.update_balance_fac();
+            /* right_node.update_balance_fac(); */
+            /* self.update_balance_fac(); */
+            right_node.balance_fac = 0;
+            self.balance_fac = 0;
 
             true
         }
@@ -110,9 +112,11 @@ pub mod avl_node {
             self.left = new_left_tree;
 
             //update_balance_fac only for B(Root) and D(Right_Node)
-            self.update_balance_fac();
             let left_node = self.left.as_mut().unwrap();
-            left_node.update_balance_fac();
+            /* left_node.update_balance_fac(); */
+            /* self.update_balance_fac(); */
+            left_node.balance_fac = 0;
+            self.balance_fac = 0;
 
             true
         }
@@ -121,39 +125,39 @@ pub mod avl_node {
         ///
         /// Case I
         ///
-        ///                (X) balance_fac = -1
-        ///               /                        (rotation to right)        (Y)  balance_fac = 0
-        ///             (Y) balance_fac = -1              =>                  / \                
-        ///             /                                                   (Y) (Z) balance_fac = 0
-        ///           (Z)  balance_fac = 0
+        ///         (X) balance_fac = -2
+        ///         /                        (rotation to right)        (Y)  balance_fac = 0
+        ///       (Y) balance_fac = -1              =>                  / \                
+        ///       /                                                   (Y) (Z) balance_fac = 0
+        ///     (Z)  balance_fac = 0
         ///
         /// Case II
         ///
-        ///           (X) balance_fac =  1
-        ///             \                          (rotation to right)        (Y)  balance_fac = 0
-        ///             (Y) balance_fac =  1              =>                  / \                
-        ///              \                                                   (X) (Z) balance_fac = 0
-        ///              (Z)  balance_fac = 0
+        ///     (X) balance_fac =  2
+        ///      \                          (rotation to right)        (Y)  balance_fac = 0
+        ///      (Y) balance_fac =  1              =>                  / \                
+        ///       \                                                  (X) (Z) balance_fac = 0
+        ///       (Z)  balance_fac = 0
         ///      
         /// Case III
         ///
-        ///            (ii) (X) balance_fac =  1     (rotation to right) (i)
-        ///                  \                       (rotation to left) (ii)        (Z)  balance_fac = 0
-        ///             (i) (Y) balance_fac = -1               =>                  / \                
-        ///                 /                                                   (X) (Y) balance_fac = 0
-        ///               (Z)  balance_fac = 0
+        ///  (ii) (X) balance_fac =  2     (rotation to right) (i)
+        ///         \                       (rotation to left) (ii)        (Z)  balance_fac = 0
+        ///    (i) (Y) balance_fac = -1               =>                  / \                
+        ///         /                                                   (X) (Y) balance_fac = 0
+        ///       (Z)  balance_fac = 0
         ///
         /// Case IV
         ///
-        ///            (ii) (X) balance_fac =  -1    (rotation to left) (i)
-        ///                 /                       (rotation to right) (ii)      (Z)  balance_fac = 0
-        ///           (i) (Y) balance_fac = 1               =>                    / \                
-        ///                \                                                   (Y) (Z) balance_fac = 0
-        ///               (Z)  balance_fac = 0
+        ///     (ii) (X) balance_fac =  -2    (rotation to left) (i)
+        ///          /                       (rotation to right) (ii)      (Z)  balance_fac = 0
+        ///    (i) (Y) balance_fac = 1               =>                    / \                
+        ///          \                                                   (Y) (Z) balance_fac = 0
+        ///         (Z)  balance_fac = 0
         ///
-        pub fn rebalance(&mut self) -> bool {
+        pub fn rebalance(&mut self, old_balance_fac: i8) -> bool {
             match self.balance_fac {
-                -1 => {
+                -2 => {
                     if let Some(ref mut left_node) = self.left {
                         //Root is heavy on left side
                         if left_node.balance_fac == -1 {
@@ -167,11 +171,14 @@ pub mod avl_node {
                             left_node.rotation_left();
                             self.rotation_right();
                             return true;
+                        } else {
+                            self.balance_fac = old_balance_fac;
                         }
                     }
+
                     return false;
                 }
-                1 => {
+                2 => {
                     if let Some(ref mut right_node) = self.right {
                         //Root is heavy on right side
                         if right_node.balance_fac == 1 {
@@ -185,8 +192,11 @@ pub mod avl_node {
                             right_node.rotation_right();
                             self.rotation_left();
                             return true;
+                        } else {
+                            self.balance_fac = old_balance_fac;
                         }
                     }
+
                     return false;
                 }
 
