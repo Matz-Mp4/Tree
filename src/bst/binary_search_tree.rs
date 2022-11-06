@@ -1,4 +1,3 @@
-#[allow(dead_code)]
 pub mod bst {
     use std::collections::VecDeque;
     use std::mem::replace;

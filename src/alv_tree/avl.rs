@@ -256,6 +256,17 @@ pub mod avl_set {
             }
         }
 
+        ///return false wether the value inserted already exist in tree
+        /// ```compile_fail
+        ///  # Examples
+        ///  assert_eq!(true, tree.add(2));
+        ///  assert_eq!(true, tree.add(3));
+        ///  assert_eq!(true, tree.add(1));
+        ///
+        ///  //Inserting a value that already exist
+        ///  assert_eq!(false, tree.add(1));
+        ///```
+ 
         pub fn add(&mut self, value: T) -> bool {
             let mut current_tree = &mut self.root;
             let mut parents_nodes = Vec::<*mut Node<T>>::new();

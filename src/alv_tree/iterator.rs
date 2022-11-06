@@ -14,6 +14,7 @@ pub mod avl_iterator {
     impl<'a, T: 'a + Ord> Iterator for AvlNodeIterator<'a, T> {
         type Item = &'a Node<T>;
 
+        ///return the next element in ascending order
         fn next(&mut self) -> Option<Self::Item> {
             let mut data: Option<Self::Item> = None;
             let mut veri = false;
@@ -59,6 +60,7 @@ pub mod avl_iterator {
     }
 
     impl<'a, T: Ord> AvlTree<T> {
+        ///Return a iterator for the nodes of tree
         pub fn node_iter(&'a self) -> AvlNodeIterator<'a, T> {
             AvlNodeIterator {
                 prev_nodes: Vec::new(),
@@ -66,7 +68,7 @@ pub mod avl_iterator {
             }
         }
 
-        ///Return all the elements of the tree inside of a iterator
+        ///Return a iterator for the values of tree
         ///
         /// ```compile_fail
         /// # Examples
@@ -88,7 +90,7 @@ pub mod avl_iterator {
         pub fn iter(&'a self) -> Map<AvlNodeIterator<'a, T>, fn(&'a Node<T>) -> &T> {
             /*
                 Takes a closure and creates an iterator which calls that closure on element.
-                
+
                 `map()` transforms one iterator into another, by means of its argument:
                 something that implements [`FnMut`]. It produces a new iterator which
                 calls this closure on each element of the original iterator.
