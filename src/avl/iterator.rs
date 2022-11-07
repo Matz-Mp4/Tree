@@ -1,9 +1,9 @@
 pub mod avl_iterator {
     use std::iter::Map;
 
-    use crate::alv_tree::{
-        avl::avl_set::AvlTree,
-        node::avl_node::{Node, Tree},
+    use crate::avl::{
+        avlset::AvlTree,
+        node::{Node, Tree},
     };
 
     pub struct AvlNodeIterator<'a, T: Ord> {
