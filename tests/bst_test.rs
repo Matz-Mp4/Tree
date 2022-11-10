@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
 
-    use tree::bst::binary_search_tree::bst::BinaryTree;
+    use tree::bst::binary_search_tree::BinaryTree;
 
     #[test]
     fn amount_verification() {

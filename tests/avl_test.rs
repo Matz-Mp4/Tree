@@ -1,13 +1,28 @@
 #[cfg(test)]
 mod tests {
 
-    /* use tree::alv_tree::avl::avl_set::AvlTree; */
+    mod avl {
+        use tree::avl::avlset::AvlTree;
+        #[test]
+        fn add_verification() {
+            let mut tree: AvlTree<i32> = AvlTree::new();
 
-    mod avl {}
+            for i in 1..=100 {
+                tree.add(i);
+            }
+
+            let iter = tree.node_iter();
+            let bal_iter = iter.map(|node| node.balance_fac < 2);
+
+            for checker in bal_iter {
+                assert_eq!(true, checker);
+            }
+        }
+    }
 
     mod node {
         use std::cmp::Ordering;
-        use tree::alv_tree::{avl::avl_set::AvlTree, node::avl_node::Node};
+        use tree::avl::{avlset::AvlTree, node::Node};
 
         fn add_no_rotation(tree: &mut AvlTree<i32>, value: i32) {
             let mut current_tree = &mut tree.root;
@@ -29,7 +44,7 @@ mod tests {
             }));
         }
 
-       #[test]
+        #[test]
         fn rotation_right() {
             let mut tree: AvlTree<i32> = AvlTree::new();
             add_no_rotation(&mut tree, 2);

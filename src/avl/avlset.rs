@@ -1,5 +1,5 @@
 use crate::avl::node::Node;
-use std::{cmp::Ordering, collections::VecDeque, fmt::Display};
+use std::{cmp::Ordering, collections::VecDeque, fmt::Display, mem::replace};
 
 type Tree<T> = Option<Box<Node<T>>>;
 
@@ -315,40 +315,65 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
     }
 
     //TODO
-    /* pub fn remove(&mut self, value: &T) -> bool {
+    pub fn remove(&mut self, value: &T) -> bool {
         let mut target_tree = &mut self.root;
-        let mut veri = false;
-        /* let mut parents_nodes = Vec::<*mut Node<T>>::new(); */
-
-        let fodase = {
-            while veri == false {
-                if let Some(current_node) = target_tree {
-                    // Converting a mutable reference to a pointer
-                    //allow one secondary mutable reference after insertion
-                    //if we use let mut parents_nodes = Vec::<&mut Node<T>>::new();
-                    //we could not to push because of Borrow checker (borrow twice a mutable variable)
-                    match current_node.data.cmp(&value) {
-                        Ordering::Less => {
-                            /* parents_nodes.push(&mut **current_node); */
-                            target_tree = &mut current_node.right;
-                        }
-                        Ordering::Equal => {
-                            veri = true;
-                        }
-
-                        Ordering::Greater => {
-                            /* current_node.balance_fac += -1; */
-                            target_tree = &mut current_node.left;
-                        }
-                    }
+        let mut parents_nodes = Vec::<*mut Node<T>>::new();
+        let mut target_node = None;
+        /*  let mut check_parent = false;
+               let mut old_balance_fac;
+        */
+        while let Some(current_node) = target_tree {
+            // Converting a mutable reference to a pointer
+            //allow one secondary mutable reference after insertion
+            //if we use let mut parents_nodes = Vec::<&mut Node<T>>::new();
+            //we could not to push because of Borrow checker (borrow twice a mutable variable)
+            match current_node.data.cmp(&value) {
+                Ordering::Less => {
+                    parents_nodes.push(&mut **current_node);
+                    target_tree = &mut current_node.right;
+                }
+                Ordering::Equal => {
+                    target_node = Some(current_node);
+                    break;
                 }
 
-                if veri == true {
-                    target_tree;
+                Ordering::Greater => {
+                    parents_nodes.push(&mut **current_node);
+                    target_tree = &mut current_node.left;
                 }
             }
-        };
+        }
+        //element found
+        if let Some(node) = target_node {
+            //0 children
+            if node.left.is_none() && node.right.is_none() {
+                unimplemented!();
+            // 1 child on left
+            } else if node.left.is_some() && node.right.is_none() {
+                if let Some(left_node) = node.left.take() {
+                    let _ignore = replace(node, left_node);
+                }
+            // 1 child on right
+            } else if node.left.is_none() && node.right.is_some() {
+                if let Some(right_node) = node.right.take() {
+                    let _ignore = replace(node, right_node);
+                }
+            //2 children
+            } else {
+                unimplemented!();
+            }
+            /*
+            while !check_parent && !parents_nodes.is_empty() {
+                //We only can derefence a raw pointer in unsafe rust
+                let node = unsafe {
+                    // Converting a mutable pointer back to a reference
+                    &mut *(parents_nodes.pop().unwrap())
+                };
+                old_balance_fac = node.update_balance_fac(&value);
+                check_parent = node.rebalance(old_balance_fac);
+            } */
+        }
 
         false
-    } */
+    }
 }
