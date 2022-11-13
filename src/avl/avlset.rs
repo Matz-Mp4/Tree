@@ -374,14 +374,14 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
             } else if node.left.is_some() && node.right.is_none() {
                 if let Some(left_node) = node.left.take() {
                     let _ignore = replace(node, left_node);
-                    parents_nodes.push(&mut **node);
+                    /* parents_nodes.push(&mut **node); */
                 }
 
             // 1 child on right
             } else if node.left.is_none() && node.right.is_some() {
                 if let Some(right_node) = node.right.take() {
                     let _ignore = replace(node, right_node);
-                    parents_nodes.push(&mut **node);
+                    /* parents_nodes.push(&mut **node); */
                 }
             //2 children
             } else {

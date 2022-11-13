@@ -14,6 +14,8 @@ fn main() {
     tree.remove(&8);
     tree.remove(&10);
     tree.remove(&2);
+    /* tree.remove(&7); */
+   // tree.remove(&9);
    
     let iter = tree.node_iter(); 
 
