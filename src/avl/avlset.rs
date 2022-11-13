@@ -308,8 +308,12 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
                 // Converting a mutable pointer back to a reference
                 &mut *(parents_nodes.pop().unwrap())
             };
-            old_balance_fac = node.update_balance_fac(&value);
+            old_balance_fac = node.update_balance_fac_insert(&value);
             check_parent = node.rebalance(old_balance_fac);
+
+            if node.balance_fac == 0 {
+                check_parent = true;
+            }
         }
         true
     }
@@ -319,9 +323,10 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
         let mut target_tree = &mut self.root;
         let mut parents_nodes = Vec::<*mut Node<T>>::new();
         let mut target_node = None;
-        /*  let mut check_parent = false;
-               let mut old_balance_fac;
-        */
+        let mut check_parent = false;
+        let mut old_balance_fac;
+        let mut change_data = *value;
+
         while let Some(current_node) = target_tree {
             // Converting a mutable reference to a pointer
             //allow one secondary mutable reference after insertion
@@ -347,31 +352,100 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
         if let Some(node) = target_node {
             //0 children
             if node.left.is_none() && node.right.is_none() {
-                unimplemented!();
+                if let Some(parent_ptr) = parents_nodes.pop() {
+                    let parent_node = unsafe { &mut *parent_ptr };
+
+                    if let Some(ref left_node) = parent_node.left {
+                        if left_node.data.cmp(value) == Ordering::Equal {
+                            parent_node.left.take();
+                        } else {
+                            parent_node.right.take();
+                        }
+                    } else {
+                        parent_node.right.take();
+                    }
+
+                    parents_nodes.push(&mut *parent_node);
+                } else {
+                    /* self.root.take(); */
+                }
+
             // 1 child on left
             } else if node.left.is_some() && node.right.is_none() {
                 if let Some(left_node) = node.left.take() {
                     let _ignore = replace(node, left_node);
+                    parents_nodes.push(&mut **node);
                 }
+
             // 1 child on right
             } else if node.left.is_none() && node.right.is_some() {
                 if let Some(right_node) = node.right.take() {
                     let _ignore = replace(node, right_node);
+                    parents_nodes.push(&mut **node);
                 }
             //2 children
             } else {
-                unimplemented!();
+                let mut inner_parents_nodes = Vec::<*mut Node<T>>::new();
+                inner_parents_nodes.push(&mut **node);
+                let mut most_left_right_tree = &mut node.right;
+                let mut ver = false;
+
+                //Getting the most lef-right node
+                while ver == false {
+                    if let Some(node_left_right) = most_left_right_tree {
+                        if node_left_right.left.is_none() {
+                            ver = true;
+                        }
+                    }
+                    //Because of Borrow Checker
+                    if ver == false {
+                        if let Some(node_left_right) = most_left_right_tree {
+                            inner_parents_nodes.push(&mut **node_left_right);
+                            most_left_right_tree = &mut node_left_right.left;
+                        }
+                    }
+                }
+
+                change_data = {
+                    if most_left_right_tree.as_ref().unwrap().right.is_some() {
+                        let left_tree = most_left_right_tree.as_mut().unwrap().right.take();
+                        let _temp = replace(most_left_right_tree, left_tree);
+                        _temp.unwrap().data
+                    } else {
+                        most_left_right_tree.take().unwrap().data
+                    }
+                };
+
+                while !check_parent && !inner_parents_nodes.is_empty() {
+                    let node = unsafe { &mut *(inner_parents_nodes.pop().unwrap()) };
+
+                    old_balance_fac = node.update_balance_fac_remove(&value);
+                    check_parent = node.rebalance_remove(old_balance_fac);
+
+                    //the height did not change
+                    if node.balance_fac != 0 {
+                        check_parent = true
+                    }
+                }
+
+                let _ignore = replace(&mut node.data, change_data);
             }
-            /*
+
             while !check_parent && !parents_nodes.is_empty() {
                 //We only can derefence a raw pointer in unsafe rust
                 let node = unsafe {
                     // Converting a mutable pointer back to a reference
                     &mut *(parents_nodes.pop().unwrap())
                 };
-                old_balance_fac = node.update_balance_fac(&value);
-                check_parent = node.rebalance(old_balance_fac);
-            } */
+
+                old_balance_fac = node.update_balance_fac_remove(&value);
+                check_parent = node.rebalance_remove(old_balance_fac);
+
+                //the height did not change
+                if node.balance_fac != 0 {
+                    check_parent = true
+                }
+            }
         }
 
         false

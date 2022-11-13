@@ -1,4 +1,3 @@
-
 use std::{
     cmp::Ordering,
     fmt::Display,
@@ -24,12 +23,25 @@ impl<T: Ord + Display> Node<T> {
         }
     }
 
-    pub fn update_balance_fac(&mut self, value_insert: &T) -> i8 {
+    pub fn update_balance_fac_insert(&mut self, value_insert: &T) -> i8 {
         let old_balance_fac = self.balance_fac.clone();
+
         if self.data.cmp(value_insert) == Ordering::Greater {
             self.balance_fac += -1;
         } else if self.data.cmp(value_insert) == Ordering::Less {
             self.balance_fac += 1;
+        }
+        old_balance_fac
+    }
+
+    pub fn update_balance_fac_remove(&mut self, value_insert: &T) -> i8 {
+        let old_balance_fac = self.balance_fac.clone();
+
+        let result = self.data.cmp(value_insert);
+        if result == Ordering::Greater {
+            self.balance_fac += 1;
+        } else if result == Ordering::Less || result == Ordering::Equal {
+            self.balance_fac += -1;
         }
         old_balance_fac
     }
@@ -80,14 +92,6 @@ impl<T: Ord + Display> Node<T> {
         new_right_node.right = right_tree;
         // 6. Link swapped D node to root right node
         self.right = new_right_tree;
-
-        //update_balance_fac only for B(Root) and D(Right_Node)
-        let right_node = self.right.as_mut().unwrap();
-        /* right_node.update_balance_fac(); */
-        /* self.update_balance_fac(); */
-        right_node.balance_fac = 0;
-        self.balance_fac = 0;
-
         true
     }
 
@@ -135,14 +139,6 @@ impl<T: Ord + Display> Node<T> {
         new_left_node.left = left_tree;
         // 6. Link swapped 2 node to root left node
         self.left = new_left_tree;
-
-        //update_balance_fac only for B(Root) and D(Right_Node)
-        let left_node = self.left.as_mut().unwrap();
-        /* left_node.update_balance_fac(); */
-        /* self.update_balance_fac(); */
-        left_node.balance_fac = 0;
-        self.balance_fac = 0;
-
         true
     }
 
@@ -186,12 +182,19 @@ impl<T: Ord + Display> Node<T> {
                     //Root is heavy on left side
                     if left_node.balance_fac == -1 {
                         //Case I
+                        self.balance_fac = 0;
+                        left_node.balance_fac = 0;
                         self.rotation_right();
                         return true;
 
                     //Root is also heavy on left side and need double rotation
                     } else if left_node.balance_fac == 1 {
                         //Case IV
+                        self.balance_fac = 0;
+                        left_node.balance_fac = 0;
+                        let left_right_node = left_node.right.as_mut().unwrap();
+                        left_right_node.balance_fac = 0;
+
                         left_node.rotation_left();
                         self.rotation_right();
                         return true;
@@ -207,17 +210,94 @@ impl<T: Ord + Display> Node<T> {
                     //Root is heavy on right side
                     if right_node.balance_fac == 1 {
                         //Case II
+                        self.balance_fac = 0;
+                        right_node.balance_fac = 0;
                         self.rotation_left();
                         return true;
 
                     //Root is also heavy on right side and need double rotation
                     } else if right_node.balance_fac == -1 {
                         //Case III
+                        self.balance_fac = 0;
+                        right_node.balance_fac = 0;
+                        let right_left_node = right_node.left.as_mut().unwrap();
+                        right_left_node.balance_fac = 0;
                         right_node.rotation_right();
                         self.rotation_left();
+
                         return true;
                     } else {
                         self.balance_fac = old_balance_fac;
+                    }
+                }
+
+                return false;
+            }
+
+            _ => false,
+        }
+    }
+
+    pub fn rebalance_remove(&mut self, old_balance_fac: i8) -> bool {
+        match self.balance_fac {
+            -2 => {
+                if let Some(ref mut left_node) = self.left {
+                    //Root is heavy on left side
+                    if left_node.balance_fac == -1 {
+                        //Case I
+                        self.balance_fac = 0;
+                        left_node.balance_fac = 0;
+                        self.rotation_right();
+                        return true;
+
+                    //Root is also heavy on left side and need double rotation
+                    } else if left_node.balance_fac == 1 {
+                        //Case IV
+                        self.balance_fac = 0;
+                        left_node.balance_fac = 0;
+                        let left_right_node = left_node.right.as_mut().unwrap();
+                        left_right_node.balance_fac = 0;
+
+                        left_node.rotation_left();
+                        self.rotation_right();
+                        return true;
+                    } else if left_node.balance_fac == 0 {
+                        /* self.balance_fac = old_balance_fac; */
+                        self.balance_fac = 1;
+                        left_node.balance_fac = -1;
+                        self.rotation_right();
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            2 => {
+                if let Some(ref mut right_node) = self.right {
+                    //Root is heavy on right side
+                    if right_node.balance_fac == 1 {
+                        //Case II
+                        self.balance_fac = 0;
+                        right_node.balance_fac = 0;
+                        self.rotation_left();
+                        return true;
+
+                    //Root is also heavy on right side and need double rotation
+                    } else if right_node.balance_fac == -1 {
+                        //Case III
+                        self.balance_fac = 0;
+                        right_node.balance_fac = 0;
+                        let right_left_node = right_node.left.as_mut().unwrap();
+                        right_left_node.balance_fac = 0;
+                        right_node.rotation_right();
+                        self.rotation_left();
+
+                        return true;
+                    } else if right_node.balance_fac == 0 {
+                        self.balance_fac = -1;
+                        right_node.balance_fac = 1;
+                        self.rotation_left();
+                        return true;
                     }
                 }
 
@@ -242,8 +322,8 @@ impl<T: Ord + Display> Node<T> {
     ///
     ///   assert_eq!(Some(&3), root.get_next().unwrap());
     /// ```
-    pub fn get_next(&self) -> &Tree<T> {
-        let mut next = &self.left;
+    pub fn get_next(&mut self) -> &mut Tree<T> {
+        let mut next = &mut self.left;
         let mut ver = false;
 
         while ver == false {
@@ -255,7 +335,7 @@ impl<T: Ord + Display> Node<T> {
             //Because of Borrow Checker
             if ver == false {
                 if let Some(current_node) = next {
-                    next = &current_node.right;
+                    next = &mut current_node.right;
                 }
             }
         }
