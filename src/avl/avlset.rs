@@ -318,15 +318,28 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
         true
     }
 
-    //TODO
+    ///return false wether the value does not  exist in tree
+    /// ```compile_fail
+    ///  # Examples
+    ///
+    ///  for element in 1..=5 {
+    ///     tree.add(element);
+    ///  }
+    ///  assert_eq!(true, tree.remove(2));
+    ///  assert_eq!(true, tree.remove(3));
+    ///  assert_eq!(true, tree.remove(1));
+    ///
+    ///  //Removing a value that does not exist
+    ///  assert_eq!(false, tree.remove(0));
+    ///```
+
     pub fn remove(&mut self, value: &T) -> bool {
         let mut target_tree = &mut self.root;
         let mut parents_nodes = Vec::<*mut Node<T>>::new();
         let mut target_node = None;
         let mut check_parent = false;
-        let mut old_balance_fac;
-        let mut change_data = *value;
 
+        //Search the node
         while let Some(current_node) = target_tree {
             // Converting a mutable reference to a pointer
             //allow one secondary mutable reference after insertion
@@ -364,24 +377,21 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
                     } else {
                         parent_node.right.take();
                     }
-
                     parents_nodes.push(&mut *parent_node);
                 } else {
-                    /* self.root.take(); */
+                    self.root.take();
                 }
 
             // 1 child on left
             } else if node.left.is_some() && node.right.is_none() {
                 if let Some(left_node) = node.left.take() {
                     let _ignore = replace(node, left_node);
-                    /* parents_nodes.push(&mut **node); */
                 }
 
             // 1 child on right
             } else if node.left.is_none() && node.right.is_some() {
                 if let Some(right_node) = node.right.take() {
                     let _ignore = replace(node, right_node);
-                    /* parents_nodes.push(&mut **node); */
                 }
             //2 children
             } else {
@@ -406,7 +416,7 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
                     }
                 }
 
-                change_data = {
+                let change_data = {
                     if most_left_right_tree.as_ref().unwrap().right.is_some() {
                         let left_tree = most_left_right_tree.as_mut().unwrap().right.take();
                         let _temp = replace(most_left_right_tree, left_tree);
@@ -419,8 +429,8 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
                 while !check_parent && !inner_parents_nodes.is_empty() {
                     let node = unsafe { &mut *(inner_parents_nodes.pop().unwrap()) };
 
-                    old_balance_fac = node.update_balance_fac_remove(&value);
-                    check_parent = node.rebalance_remove(old_balance_fac);
+                    node.update_balance_fac_remove(&value);
+                    check_parent = node.rebalance_remove();
 
                     //the height did not change
                     if node.balance_fac != 0 {
@@ -438,8 +448,8 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
                     &mut *(parents_nodes.pop().unwrap())
                 };
 
-                old_balance_fac = node.update_balance_fac_remove(&value);
-                check_parent = node.rebalance_remove(old_balance_fac);
+                node.update_balance_fac_remove(&value);
+                check_parent = node.rebalance_remove();
 
                 //the height did not change
                 if node.balance_fac != 0 {

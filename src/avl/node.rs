@@ -19,6 +19,7 @@ impl<T: Ord + Display> Node<T> {
             left: None,
             right: None,
             data,
+            //right_height - left_height
             balance_fac: 0,
         }
     }
@@ -238,7 +239,76 @@ impl<T: Ord + Display> Node<T> {
         }
     }
 
-    pub fn rebalance_remove(&mut self, old_balance_fac: i8) -> bool {
+    /// return true wether tree need to rebalance or false whether it does not need
+    //
+    // h = height
+    // b = balance factor
+    //
+    // Case I
+    //
+    // b = -2    (X)                                            (Y)     b = 0
+    //          /  \              (rotation to right)           / \
+    // b = -1  (Y) [h-1]                    =>                 /  (X)   b = 0
+    //        /  \                                             /   / \
+    //       /   [h-1]                                       [h] [h-1] [h-1]
+    //      /
+    //    [h]
+    //
+    // Case II
+    //
+    //           (X) b = 2                                       b = 0    (Y)
+    //          /  \              (rotation to left)                      / \
+    //       [h-1] (Y) b = 1             =>                   b = 0     (X)  \
+    //             / \                                                 / \    \
+    //        [h-1]   \                                           [h-1] [h-1] [h]
+    //                 \
+    //                 [h]
+    //
+    //
+    // Case III
+    //
+    // b = -2     (X)                                                 b = 0  (Z)
+    //            / \                                                       /  \
+    // b = 1   (Y)  [h-1]         (rotation to left)              b = 0  (Y)   (X) b = 0
+    //         / \                (rotation to right)                   /  \   /  \
+    //    [h-1]  (Z)                     =>                        [h-1][h-1][h-1][h-1]
+    //           / \
+    //       [h-1] [h-1]
+    //
+    //
+    // Case IV
+    //
+    //       (X)     b = 2                                      b = 0  (Z)
+    //      /  \                                                      /  \
+    //   [h-1] (Y)   b = -1       (rotation to right)        b = 0  (X)   (Y)  b = 0
+    //         / \                (rotation to left)               /  \   /  \
+    //       (Z) [h-1]                    =>                  [h-1][h-1][h-1][h-1]
+    //       / \
+    //  [h-1] [h-1]
+    //
+    //
+    //  Case V
+    //
+    // b = -2    (X)                                            (Y)     b = 1
+    //          /  \              (rotation to right)           / \
+    // b =  0  (Y) [h-1]                    =>                 /  (X)   b = -1
+    //        /  \                                            /   / \
+    //       /    \                                         [h]  / [h-1]
+    //      /      \                                            /
+    //    [h]      [h]                                         [h]
+    //
+    // Case VI
+    //
+    //           (X) b = 2                                       b = -1    (Y)
+    //          /  \              (rotation to left)                      / \
+    //       [h-1] (Y) b = 0             =>                   b = 1     (X)  \
+    //             / \                                                 / \    \
+    //            /   \                                           [h-1]   \   [h]
+    //           /     \                                                   \  
+    //          [h]    [h]                                                [h]  
+ 
+
+    pub fn rebalance_remove(&mut self) -> bool {
         match self.balance_fac {
             -2 => {
                 if let Some(ref mut left_node) = self.left {
@@ -262,7 +332,7 @@ impl<T: Ord + Display> Node<T> {
                         self.rotation_right();
                         return true;
                     } else if left_node.balance_fac == 0 {
-                        /* self.balance_fac = old_balance_fac; */
+                        //Case V
                         self.balance_fac = 1;
                         left_node.balance_fac = -1;
                         self.rotation_right();
@@ -294,6 +364,7 @@ impl<T: Ord + Display> Node<T> {
 
                         return true;
                     } else if right_node.balance_fac == 0 {
+                        //Case VI
                         self.balance_fac = -1;
                         right_node.balance_fac = 1;
                         self.rotation_left();
