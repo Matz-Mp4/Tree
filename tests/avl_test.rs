@@ -12,10 +12,31 @@ mod tests {
             }
 
             let iter = tree.node_iter();
-            let bal_iter = iter.map(|node| node.balance_fac < 2);
+            let bal_iter = iter.map(|node| node.balance_fac < 2 && node.balance_fac > -2);
 
             for checker in bal_iter {
                 assert_eq!(true, checker);
+            }
+        }
+
+        #[test]
+        fn remove_verification() {
+            let mut tree: AvlTree<i32> = AvlTree::new();
+
+            for i in 1..=100 {
+                tree.add(i);
+            }
+
+            while !tree.is_empty() {
+                let value_in_root = tree.root.as_ref().unwrap().data;
+
+                let iter = tree.node_iter();
+                let bal_iter = iter.map(|node| node.balance_fac < 2 && node.balance_fac > -2);
+
+                for checker in bal_iter {
+                    assert_eq!(true, checker);
+                }
+                tree.remove(&value_in_root);
             }
         }
     }

@@ -144,6 +144,7 @@ impl<T: Ord + Display> Node<T> {
     }
 
     /// return true wether tree need to rebalance or false whether it does not need
+    /// so return true wether height tree did not change or false
     // ```
     // Case I
     //
@@ -176,7 +177,7 @@ impl<T: Ord + Display> Node<T> {
     //         (Z)  balance_fac = 0
     // ```
     //
-    pub fn rebalance(&mut self, old_balance_fac: i8) -> bool {
+    pub fn rebalance_insert(&mut self, old_balance_fac: i8) -> bool {
         match self.balance_fac {
             -2 => {
                 if let Some(ref mut left_node) = self.left {
@@ -239,7 +240,7 @@ impl<T: Ord + Display> Node<T> {
         }
     }
 
-    /// return true wether tree need to rebalance or false whether it does not need
+    /// return true wether height tree changed  
     //
     // h = height
     // b = balance factor
@@ -304,9 +305,8 @@ impl<T: Ord + Display> Node<T> {
     //       [h-1] (Y) b = 0             =>                   b = 1     (X)  \
     //             / \                                                 / \    \
     //            /   \                                           [h-1]   \   [h]
-    //           /     \                                                   \  
-    //          [h]    [h]                                                [h]  
- 
+    //           /     \                                                   \
+    //          [h]    [h]                                                [h]
 
     pub fn rebalance_remove(&mut self) -> bool {
         match self.balance_fac {
@@ -336,7 +336,7 @@ impl<T: Ord + Display> Node<T> {
                         self.balance_fac = 1;
                         left_node.balance_fac = -1;
                         self.rotation_right();
-                        return true;
+                        return false;
                     }
                 }
 
@@ -368,7 +368,7 @@ impl<T: Ord + Display> Node<T> {
                         self.balance_fac = -1;
                         right_node.balance_fac = 1;
                         self.rotation_left();
-                        return true;
+                        return false;
                     }
                 }
 

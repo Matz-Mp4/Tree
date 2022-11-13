@@ -309,7 +309,7 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
                 &mut *(parents_nodes.pop().unwrap())
             };
             old_balance_fac = node.update_balance_fac_insert(&value);
-            check_parent = node.rebalance(old_balance_fac);
+            check_parent = node.rebalance_insert(old_balance_fac);
 
             if node.balance_fac == 0 {
                 check_parent = true;
@@ -337,7 +337,7 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
         let mut target_tree = &mut self.root;
         let mut parents_nodes = Vec::<*mut Node<T>>::new();
         let mut target_node = None;
-        let mut check_parent = false;
+        let mut check_parent = true;
 
         //Search the node
         while let Some(current_node) = target_tree {
@@ -432,8 +432,8 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
                     node.update_balance_fac_remove(&value);
                     check_parent = node.rebalance_remove();
 
-                    //the height did not change
-                    if node.balance_fac != 0 {
+                    //the height changed
+                    if node.balance_fac == 0 {
                         check_parent = true
                     }
                 }
@@ -451,10 +451,10 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
                 node.update_balance_fac_remove(&value);
                 check_parent = node.rebalance_remove();
 
-                //the height did not change
-                if node.balance_fac != 0 {
+                //the height changed
+                if node.balance_fac == 0 {
                     check_parent = true
-                }
+                }  
             }
         }
 
