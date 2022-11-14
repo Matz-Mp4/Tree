@@ -41,7 +41,7 @@ impl<T: Ord + Display> Node<T> {
         let result = self.data.cmp(value_insert);
         if result == Ordering::Greater {
             self.balance_fac += 1;
-        } else if result == Ordering::Less || result == Ordering::Equal {
+        } else if result == Ordering::Less {
             self.balance_fac += -1;
         }
         old_balance_fac
@@ -307,7 +307,7 @@ impl<T: Ord + Display> Node<T> {
     //            /   \                                           [h-1]   \   [h]
     //           /     \                                                   \
     //          [h]    [h]                                                [h]
-
+    //
     pub fn rebalance_remove(&mut self) -> bool {
         match self.balance_fac {
             -2 => {

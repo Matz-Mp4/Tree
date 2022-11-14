@@ -23,7 +23,7 @@ mod tests {
         fn remove_verification() {
             let mut tree: AvlTree<i32> = AvlTree::new();
 
-            for i in 1..=100 {
+            for i in 1..=10000 {
                 tree.add(i);
             }
 

@@ -333,11 +333,12 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
     ///  assert_eq!(false, tree.remove(0));
     ///```
 
+    //TODO comment while
     pub fn remove(&mut self, value: &T) -> bool {
         let mut target_tree = &mut self.root;
         let mut parents_nodes = Vec::<*mut Node<T>>::new();
         let mut target_node = None;
-        let mut check_parent = true;
+        let mut height_changed = true;
 
         //Search the node
         while let Some(current_node) = target_tree {
@@ -426,35 +427,31 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
                     }
                 };
 
-                while !check_parent && !inner_parents_nodes.is_empty() {
+                let _ignore = replace(&mut node.data, change_data);
+
+                while height_changed == true && !inner_parents_nodes.is_empty() {
                     let node = unsafe { &mut *(inner_parents_nodes.pop().unwrap()) };
 
-                    node.update_balance_fac_remove(&value);
-                    check_parent = node.rebalance_remove();
-
                     //the height changed
-                    if node.balance_fac == 0 {
-                        check_parent = true
+                    if change_data == node.data {
+                        node.balance_fac += -1;
+                    } else {
+                        node.update_balance_fac_remove(&value);
                     }
+                    height_changed = node.rebalance_remove();
                 }
-
-                let _ignore = replace(&mut node.data, change_data);
             }
 
-            while !check_parent && !parents_nodes.is_empty() {
+            while height_changed == true && !parents_nodes.is_empty() {
                 //We only can derefence a raw pointer in unsafe rust
                 let node = unsafe {
                     // Converting a mutable pointer back to a reference
                     &mut *(parents_nodes.pop().unwrap())
                 };
 
-                node.update_balance_fac_remove(&value);
-                check_parent = node.rebalance_remove();
-
                 //the height changed
-                if node.balance_fac == 0 {
-                    check_parent = true
-                }  
+                node.update_balance_fac_remove(&value);
+                height_changed = node.rebalance_remove();
             }
         }
 
