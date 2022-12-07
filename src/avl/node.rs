@@ -144,7 +144,7 @@ impl<T: Ord + Display> Node<T> {
     }
 
     /// return true wether tree need to rebalance or false whether it does not need
-    /// so return true wether height tree did not change or false
+    /// so return true wether height tree changed or false
     // ```
     // Case I
     //

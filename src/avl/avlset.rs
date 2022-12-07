@@ -265,6 +265,9 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
     ///  //Inserting a value that already exist
     ///  assert_eq!(false, tree.add(1));
     ///```
+    //
+    //Everytime that a rotation in a p node occurs and the balance factor change from 2 to 0
+    //the height of the tree change otherwise does not change
 
     pub fn add(&mut self, value: T) -> bool {
         let mut current_tree = &mut self.root;
@@ -291,7 +294,7 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
         }
         *current_tree = Some(Box::new(Node::new(value)));
 
-        let mut check_parent = false;
+        let mut height_changed = false;
         let mut old_balance_fac;
 
         //We could change the type of Tree to Option<rc<RefCell<T>>>
@@ -302,17 +305,18 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
         //It's similar to this f(f⁻¹(x)) = x => we change the balance_fac
         //and the rotation makes inverse process. So all the nodes remain will have
         //the same balance_fac after the insertion => !check_parent
-        while !check_parent && !parents_nodes.is_empty() {
+        //
+        while !height_changed && !parents_nodes.is_empty() {
             //We only can derefence a raw pointer in unsafe rust
             let node = unsafe {
                 // Converting a mutable pointer back to a reference
                 &mut *(parents_nodes.pop().unwrap())
             };
             old_balance_fac = node.update_balance_fac_insert(&value);
-            check_parent = node.rebalance_insert(old_balance_fac);
+            height_changed = node.rebalance_insert(old_balance_fac);
 
             if node.balance_fac == 0 {
-                check_parent = true;
+                height_changed = true;
             }
         }
         true
@@ -333,7 +337,10 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
     ///  assert_eq!(false, tree.remove(0));
     ///```
 
-    //TODO comment while
+    //Everytime that a rotation in a p node occurs and the balance factor change from 2 to 0
+    //the height of the tree change otherwise does not change
+
+
     pub fn remove(&mut self, value: &T) -> bool {
         let mut target_tree = &mut self.root;
         let mut parents_nodes = Vec::<*mut Node<T>>::new();
@@ -442,6 +449,9 @@ impl<T: Ord + Display + Copy> AvlTree<T> {
                 }
             }
 
+             //If the balancing factor of a node p is 0 (zero), decreasing the height of any of the subtrees 
+            //causes its balancing factor to change to 1 or -1, depending on the side on which the height 
+            //decrease occurred, but the height of the root tree p does not change.
             while height_changed == true && !parents_nodes.is_empty() {
                 //We only can derefence a raw pointer in unsafe rust
                 let node = unsafe {

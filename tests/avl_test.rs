@@ -3,6 +3,24 @@ mod tests {
 
     mod avl {
         use tree::avl::avlset::AvlTree;
+
+        #[test]
+        fn maximum_verification() {
+            let mut tree: AvlTree<i32> = AvlTree::new();
+            for i in 1..=100 {
+                tree.add(i);
+            }
+            assert_eq!(Some(&100), tree.get_maximum());
+        }
+
+        #[test]
+        fn minimum_verification() {
+            let mut tree: AvlTree<i32> = AvlTree::new();
+            for i in 1..=100 {
+                tree.add(i);
+            }
+            assert_eq!(Some(&1), tree.get_minimum());
+        }
         #[test]
         fn add_verification() {
             let mut tree: AvlTree<i32> = AvlTree::new();
@@ -23,7 +41,7 @@ mod tests {
         fn remove_verification() {
             let mut tree: AvlTree<i32> = AvlTree::new();
 
-            for i in 1..=10000 {
+            for i in 1..=100 {
                 tree.add(i);
             }
 
